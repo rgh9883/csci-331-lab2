@@ -67,6 +67,32 @@ class Term:
         return hash((self.type, self.name, tuple(self.args)))
     
 
+def occurs(var: Term, x: Term):
+    if x.is_func():
+        for term in x.args:
+            if var == term:
+                return True # var is in x(args)
+    return False
+
+
+def unify_var(var: Term, x: Term, theta: dict):
+    if var.name in theta.keys():
+        return unify(theta[var], x, theta)
+    if x.name in theta.keys():
+        return unify(var, theta[x], theta)
+    if occurs(var, x):
+        return None
+
+    return {**theta, var.name: x}
+    
+
+def unify(x, y, theta):
+    if theta == None:
+        return None
+    if x == y:
+        return theta
+    
+
 def pl_resolve(c1: Clause, c2: Clause) -> list[Clause]:
     resolvents = []
     for lit1 in c1.literals:
