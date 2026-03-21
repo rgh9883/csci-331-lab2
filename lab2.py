@@ -2,7 +2,7 @@ import sys
 import re
 
 class Clause:
-    def __int__(self, literals):
+    def __init__(self, literals):
         self.literals = literals
     
     def __repr__(self):
@@ -86,9 +86,42 @@ def parse_lit(str, vars):
         str = str[1:]
     
     match = re.match(r'^(\w+)\(((.*))\)$', str)
-    name = match.group(1)
-    arg_strs = match.group(2).split(',')
-    args = [parse_term(a.strip(), vars) for a in arg_strs]
+    if match:
+        name = match.group(1)
+        arg_strs = match.group(2).split(',')
+        args = [parse_term(a.strip(), vars) for a in arg_strs]
+    else:
+        name = str
+        args = []
 
     return Literal(name, args, negated)
 
+def parse_cnf(filepath):
+    with open(filepath) as f:
+        text = f.read()
+    var_reg = re.search(r'Variables:\s*(.*)', text)
+    variables = set(var_reg.group(1).split()) if var_reg else set()
+    clause_reg = re.search(r'Clauses:\s*(.*)', text, re.DOTALL)
+
+    if not clause_reg:
+        return []
+    
+    clauses = []
+    for line in clause_reg.group(1).strip().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        lits = [parse_lit(lit, variables) for lit in line.split()]
+        c = Clause(lits)
+        clauses.append(c)
+    
+    return clauses
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        sys.exit()
+    
+    clauses = parse_cnf(sys.argv[1])
+    for c in clauses:
+        print(c)
+        
