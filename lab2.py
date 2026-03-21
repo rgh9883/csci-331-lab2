@@ -74,7 +74,7 @@ def pl_resolve(c1: Clause, c2: Clause) -> list[Clause]:
         comp = lit1.complement()
         for lit2 in c2.literals:
             if comp == lit2:
-                resolve = ([l for l in c1.literals if l != lit1] +
+                resolve = Clause([l for l in c1.literals if l != lit1] +
                             [l for l in c2.literals if l != lit2])
                 resolvents.append(resolve)
                 break
@@ -96,10 +96,8 @@ def pl_resolution(clauses: list[Clause]):
         if not new:
             return True # satisfiable
         clauses.extend(new)
-                
-                
+                        
     
-
 def parse_term(str, vars):
     func = re.match(r'^(\w+)\((.+)\)$', str)
     if func:
@@ -158,6 +156,5 @@ if __name__ == "__main__":
         sys.exit()
     
     clauses = parse_cnf(sys.argv[1])
-    for c in clauses:
-        print(c)
+    print("yes" if pl_resolution(clauses) else "no")
         
