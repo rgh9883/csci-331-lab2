@@ -1,5 +1,6 @@
 import sys
- 
+import re
+
 class Clause:
     def __int__(self, literals):
         self.literals = literals
@@ -65,4 +66,29 @@ class Term:
     def __hash__(self):
         return hash((self.type, self.name, tuple(self.args)))
     
+
+def parse_term(str, vars):
+    func = re.match(r'^(\w+)\((.+)\)$', str)
+    if func:
+        name = func.group(1)
+        arg_strs = func.group(2).split(',')
+        args = [parse_term(a.strip(), vars) for a in arg_strs]
+        return Term(Term.FUNC, name, args)
     
+    if str in vars:
+        return Term(Term.VAR, str)
+    
+    return Term(Term.CONST, str)
+
+def parse_lit(str, vars):
+    negated = str.startswith('!')
+    if negated:
+        str = str[1:]
+    
+    match = re.match(r'^(\w+)\(((.*))\)$', str)
+    name = match.group(1)
+    arg_strs = match.group(2).split(',')
+    args = [parse_term(a.strip(), vars) for a in arg_strs]
+
+    return Literal(name, args, negated)
+
